@@ -1,0 +1,21 @@
+---
+output: dynbenchmark::github_markdown_nested
+---
+
+# Metrics for comparing two trajectories
+
+Good metrics are crucial for an unbiased and comprehensive benchmarking. Here we test several possible metrics for comparing two trajectories.
+
+```{r, results = "asis"}
+dynbenchmark::knit_nest("01-metric_characterisation")
+```
+
+```{r, results = "asis"}
+dynbenchmark::knit_nest("02-metric_conformity")
+```
+
+```{r, results = "asis"}
+dynbenchmark::knit_nest("03-aggregation")
+```
+
+The results of this experiment are available [here](`r dynbenchmark::link_to_results()`).

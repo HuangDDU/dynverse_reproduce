@@ -1,0 +1,8 @@
+[ FAIL 0 | [35mWARN[39m 23 | [34mSKIP[39m 3 | [32mPASS[39m 522 ]
+
+══ Skipped tests (3) ═══════════════════════════════════════════════════════════
+• dyndimre2d cannot be loaded (1): [34mtest-wrap_add_dimred.R:110:3[39m
+• empty test (1): [34mtest-adapt_orient_topology.R:50:1[39m
+• On CRAN (1): [34mtest-method_create_ti_method_container.R:5:1[39m
+
+[ FAIL 0 | [35mWARN[39m 23 | [34mSKIP[39m 3 | [32mPASS[39m 522 ]

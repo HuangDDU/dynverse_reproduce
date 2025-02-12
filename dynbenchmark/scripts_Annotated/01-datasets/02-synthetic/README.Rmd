@@ -1,0 +1,19 @@
+---
+output: dynbenchmark::github_markdown_nested
+---
+
+# Synthetic datasets
+
+Each synthetic dataset is based on some characteristics of some real datasets. These characteristics include:
+
+* The number of cells and features
+* The number of features which are differentially expressed in the trajectory
+* Estimates of the distribution of the library sizes, average expression, dropout probabilities, ... estimated by [Splatter](https://github.com/Oshlack/splatter).
+
+Here we estimate the parameters of these "platforms" and use them to simulate datasets using different simulators. Each simulation script first creates a design dataframe, which links particular platforms, different topologies, seeds and other parameters specific for a simulator.
+
+The data is then simulated using wrappers around the simulators (see [/package/R/simulators.R](/package/R/simulators.R)), so that they all return datasets in a format consistent with dynwrap.
+
+```{r}
+dynbenchmark::render_scripts_documentation()
+```

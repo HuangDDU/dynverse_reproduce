@@ -1,0 +1,11 @@
+---
+output: dynbenchmark::github_markdown_nested
+---
+
+# Dataset characterisation
+
+Characterisation of the datasets regarding the different topologies present.
+
+```{r}
+dynbenchmark::render_scripts_documentation()
+```

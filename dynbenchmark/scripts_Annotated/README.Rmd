@@ -1,0 +1,16 @@
+---
+output: dynbenchmark::github_markdown_nested
+---
+
+```{r, warning=FALSE, message=FALSE}
+library(tidyverse)
+library(dynbenchmark)
+```
+
+# Scripts
+
+The scripts folder contains all the scripts necessary to fully reproduce the benchmarking manuscript in chronologically ordered subfolders. Each subfolder contains a readme file with further explanations of the different scripts and what they do:
+
+```{r}
+dynbenchmark::render_scripts_documentation()
+```

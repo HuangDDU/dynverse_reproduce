@@ -1,0 +1,11 @@
+---
+output: dynbenchmark::github_markdown_nested
+---
+
+# Accuracy of TI methods on real and synthetic data
+
+```{r}
+dynbenchmark::render_scripts_documentation()
+```
+
+The results of this experiment are available [here](`r dynbenchmark::link_to_results()`).

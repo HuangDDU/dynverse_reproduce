@@ -1,0 +1,9 @@
+---
+output: dynbenchmark::github_markdown_nested
+---
+
+# Preparing the manuscript
+
+```{r}
+dynbenchmark::render_scripts_documentation()
+```

@@ -1,0 +1,18 @@
+---
+output: dynbenchmark::github_markdown_nested
+---
+
+# Summarising the results into funky heatmaps
+
+```{r include=FALSE}
+library(dynbenchmark)
+library(tidyverse)
+```
+
+Here, we aggregate the results from the different experiments into a tidy format. This aggregation procedure is further discussed in our supplementary note.
+
+Next, we plot this into funky heatmaps.
+
+```{r}
+dynbenchmark::render_scripts_documentation()
+```

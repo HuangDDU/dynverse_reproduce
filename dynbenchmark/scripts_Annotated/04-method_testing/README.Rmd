@@ -1,0 +1,13 @@
+---
+output: dynbenchmark::github_markdown_nested
+---
+
+# Method testing
+
+Each method is tested on a few small real and toy datasets. Ideally, each method should be able to execute successfully on each of these datasets.
+If a method is not able to infer a trajectory on any of the datasets, it will not be included in any of the next experiments.
+
+Overview experiment:
+```{r}
+dynbenchmark::render_scripts_documentation()
+```

@@ -1,0 +1,30 @@
+---
+output: dynbenchmark::github_markdown_nested
+---
+
+# Trajectory inference methods
+
+Here we
+
+- Compile all the information we have about TI methods
+- Characterise the methods with regards to user and developer friendliness (method quality control)
+- Characterise the methods with regards to prior information, underlying algorithm, possible detectable trajectory types, ...
+
+```{r}
+dynbenchmark::render_scripts_documentation()
+```
+
+The results of this experiment are available [here](`r dynbenchmark::link_to_results()`).
+
+
+```{r, results = "asis"}
+dynbenchmark::knit_nest("01-gather_methods_information")
+```
+
+```{r, results = "asis"}
+dynbenchmark::knit_nest("02-tool_qc")
+```
+
+```{r, results = "asis"}
+dynbenchmark::knit_nest("03-method_characterisation")
+```

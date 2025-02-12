@@ -1,0 +1,22 @@
+# 以dynwrap作为基础镜像
+FROM dynverse/dynwrap_latest:v0.1.0
+
+#
+ARG GITHUB_PAT
+
+# 下载Python执行依赖包
+# igraph and louvain do not get installed by scanpy
+RUN pip install python-igraph louvain
+
+RUN pip install scanpy
+
+# for theislab/anndata#159
+RUN pip install scipy==v1.2.1
+
+RUN pip install fa2
+
+# 执行脚本
+COPY definition.yml run.py example.sh /code/
+
+# 执行的入口点
+ENTRYPOINT ["/code/run.py"]
