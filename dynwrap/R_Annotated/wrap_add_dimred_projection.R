@@ -101,7 +101,7 @@ add_dimred_projection <- function(
   } else {
     # if grouping / clusterings are given, project cells only to segments
     # of which either the from or the to is equal to their grouping
-    # 给定了聚类标签，把细胞投影到所属聚类对应的线段上
+    # 给定了聚类标签，把细胞投影到所属聚类里程碑的相连的线段上
     group_ids <- unique(grouping)
 
     progressions <- map_df(group_ids, function(group_id) {
@@ -109,10 +109,11 @@ add_dimred_projection <- function(
 
       # select all cells in this group
       if (length(cids) > 0) {
-        mns <- milestone_network %>% filter(from == group_id | to == group_id)
+        mns <- milestone_network %>% filter(from == group_id | to == group_id) # 当前聚类的连边
 
         if (nrow(mns) > 0) {
           # project to segments
+          # 投影到对应边上
           proj <- dynutils::project_to_segments(
             x = dimred[cids, , drop = FALSE],
             segment_start = dimred_milestones[mns$from, , drop = FALSE],
@@ -126,6 +127,7 @@ add_dimred_projection <- function(
           )
         } else {
           # this group is a separate cluster
+          # 单独的在里程碑的自环边上
           tibble(
             cell_id = cids,
             from = group_id,

@@ -7,6 +7,8 @@ context("Testing add_dimred_projection")
 # 手动添加该路径
 source("/home/huang/RCode/scrna_tools/dynverse_reproduce/dynwrap/tests_Annotated/testthat/test-wrap_add_waypoints_new.R")
 
+
+# 测试用例1： 不带聚类标签
 test_wrap_data <- get_test_wrap_data() # 复用之前带数据
 dataset <- test_wrap_data$dataset
 milestone_network <- test_wrap_data$milestone_network
@@ -41,14 +43,14 @@ dimred_milestones <- dimred_milestones %>%
   as.matrix()
 
 # 预期输出
-expected_milestone_percentages <- test_wrap_data$milestone_percentages %>%
-  filter(cell_id != "e") %>%
-  bind_rows(
-    tribble(
-      ~cell_id, ~milestone_id, ~percentage,
-      "e", "X", 0.5,
-      "e", "Y", 0.5,
-    )) # 对于细胞e微调
+# expected_milestone_percentages <- test_wrap_data$milestone_percentages %>%
+#   filter(cell_id != "e") %>%
+#   bind_rows(
+#     tribble(
+#       ~cell_id, ~milestone_id, ~percentage,
+#       "e", "X", 0.5,
+#       "e", "Y", 0.5,
+#     )) # 对于细胞e微调
 expected_progressions <- tribble(
   ~cell_id, ~from, ~to, ~percentage,
   "a", "W", "X", 0,
@@ -59,8 +61,7 @@ expected_progressions <- tribble(
   "f", "Z", "A", 0.2,
 )
 
-# 预期输出的降维
-expected_dimred_segment_points <-
+# expected_dimred_segment_points # 预期输出的降维
 
 
 test_that("Testing add_dimred_projection", {
@@ -86,3 +87,25 @@ test_that("Testing add_dimred_projection", {
   # expect_equivalent(trajectory$dimred_milestones, dimred_milestones)
 })
 
+
+# 测试用例2：带聚类标签
+grouping <- c("X", "X", "X", "Z", "Z", "Z") # 聚类标签名称应该与里程碑名称一致
+expected_progressions <- tribble(
+  ~cell_id, ~from, ~to, ~percentage,
+  "a", "W", "X", 0,
+  "b", "W", "X", 0.8,
+  "c", "X", "Z", 0.2,
+  "d", "X", "Z", 1,
+  "e", "X", "Z", 0.2, # 此时e只能投影到Z相关边上，与之前有细微改变
+  "f", "Z", "A", 0.2,
+)
+test_that("Testing add_dimred_projection with group", {
+  trajectory <- dataset %>%
+    add_dimred_projection(
+      milestone_network = milestone_network,
+      dimred = dimred,
+      dimred_milestones = dimred_milestones,
+      grouping = grouping
+    )
+  expect_equivalent(trajectory$progressions, expected_progressions) # expect_equivalent可以表格元数据，例如dimname
+})
