@@ -63,6 +63,7 @@ add_cell_graph <- function(
   }
 
   # check to_keep
+  # to_keep指定每个细胞是否作为骨架
   if (is.character(to_keep)) {
     cell_ids <- unique(c(cell_graph$from, cell_graph$to))
     to_keep <- (cell_ids %in% to_keep) %>% set_names(cell_ids)
@@ -82,49 +83,54 @@ add_cell_graph <- function(
   is_directed <- any(cell_graph$directed)
 
   # make igraph object
+  # 构造oigraph对象
   ids <- names(to_keep)
   gr <- igraph::graph_from_data_frame(cell_graph %>% rename(weight = length), directed = is_directed, vertices = ids)
 
   # STEP 1: for each cell, find closest milestone
+  # 步骤1： 对于每个细胞，找到最近的里程碑
   v_keeps <- names(to_keep)[to_keep]
   dists <- igraph::distances(gr, to = v_keeps)
   closest_trajpoint <- v_keeps[apply(dists, 1, which.min)]
 
   # STEP 2: simplify backbone
+  # 步骤2：简化骨架，诱导子图: 子图中两两顶点在原图中的边一定在子图中存在
   gr <- gr %>%
     igraph::induced.subgraph(v_keeps)
 
   milestone_ids <- igraph::V(gr)$name
 
   # STEP 3: Calculate progressions of cell_ids
+  # 步骤3：计算细胞的progression
   # determine which nodes were on each path
   milestone_network_proto <-
     igraph::as_data_frame(gr) %>%
-    as_tibble() %>%
-    rowwise() %>%
-    mutate(
-      path = igraph::shortest_paths(gr, from, to, mode = "out")$vpath %>% map(names)
-    ) %>%
-    ungroup()
+      as_tibble() %>%
+      rowwise() %>%
+      mutate(
+        path = igraph::shortest_paths(gr, from, to, mode = "out")$vpath %>% map(names)
+      ) %>%
+      ungroup()
 
   # for each node, find an edge which contains the node and
   # calculate its progression along that edge
+  # 计算沿边的progression
   progressions <-
     milestone_network_proto %>%
-    rowwise() %>%
-    do(with(., tibble(from, to, weight, node = path))) %>%
-    ungroup %>%
-    group_by(node) %>%
-    slice(1) %>%
-    mutate(
-      percentage = ifelse(weight == 0, 0, igraph::distances(gr, from, node) / weight)
-    ) %>%
-    ungroup() %>%
-    right_join(
-      tibble(cell_id = ids, node = closest_trajpoint),
-      by = "node"
-    ) %>%
-    select(cell_id, from, to, percentage)
+      rowwise() %>%
+      do(with(., tibble(from, to, weight, node = path))) %>%
+      ungroup %>%
+      group_by(node) %>%
+      slice(1) %>%
+      mutate(
+        percentage = ifelse(weight == 0, 0, igraph::distances(gr, from, node) / weight)
+      ) %>%
+      ungroup() %>%
+      right_join(
+        tibble(cell_id = ids, node = closest_trajpoint),
+        by = "node"
+      ) %>%
+      select(cell_id, from, to, percentage)
 
   # create output
   milestone_network <- milestone_network_proto %>%
@@ -154,5 +160,5 @@ add_cell_graph <- function(
     progressions = progressions,
     ...
   ) %>%
-    simplify_trajectory()
+    simplify_trajectory() # 这里是关键，简化轨迹
 }

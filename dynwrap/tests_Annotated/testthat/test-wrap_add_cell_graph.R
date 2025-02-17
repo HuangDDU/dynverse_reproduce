@@ -1,5 +1,8 @@
-context("Testing add_cell_graph")
+library(testthat)
+library(dynwrap)
+library(tidyverse)
 
+context("Testing add_cell_graph")
 
 # cell data
 cell_ids <- c("A", "B", "C", "D", "E", "F", "G", "H", "a", "b", "bb", "c", "cc", "d")
@@ -28,7 +31,9 @@ test_that("Testing add_cell_graph", {
     "cc", "c", .1, F,
     "d", "D", .01, F
   )
+  # 只在to_keep为True的位置构建里程碑
   to_keep <- c(A = T, B = T, C = T, D = T, E = T, "F" = T, G = T, H = T, a = F, b = F, bb = F, c = F, cc = F, d = F)
+
 
   wr <- wr_orig %>% add_cell_graph(
     cell_graph = cell_graph,
@@ -58,6 +63,7 @@ test_that("Testing add_cell_graph", {
   ) %>% sort
   expect_equal(test_strs, expected_strs)
 
+  # progression
   test_strs <- wr$progressions %>% {paste(.$cell_id, .$from, .$to, round(.$percentage, 2), sep = "|")} %>% sort
   expected_strs <- c(
     'a|ML_A|ML_D|0',
