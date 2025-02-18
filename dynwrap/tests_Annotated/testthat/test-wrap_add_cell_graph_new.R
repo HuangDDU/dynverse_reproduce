@@ -31,7 +31,7 @@ test_that("Testing add_cell_graph", {
     "XeY", "e", 0.2, F,
     "ZfA", "f", 0.5, F,
   )
-  cell_graph$directed <- TRUE
+  cell_graph$directed <- TRUE # 使用有向图，暂时比较简单
 
   to_keep <- c(W = T, X = T, Y = T, Z = T, A = T, WbX = T, XcZ = T, XeY = T, ZfA = T, a = F, b = F, c = F, d = F, e = F, f = F)
 
@@ -41,14 +41,14 @@ test_that("Testing add_cell_graph", {
     milestone_prefix = "ML_"
   )
 
-   =expected_milestone_ids <- paste0("ML_", c("W", "X", "Y", "A"))
+  expected_milestone_ids <- paste0("ML_", c("W", "X", "Y", "A"))
   expected_milestone_network <- tribble(
     ~from, ~to, ~length, ~directed,
     "ML_W", "ML_X", 1, F,
     "ML_X", "ML_Y", 1, F,
     "ML_X", "ML_A", 2, F,
   )
-  as.list(expected_milestone_network)
+  expected_milestone_network$directed <- TRUE # 使用有向图，暂时比较简单
 
   expected_progressions <- tribble(
     ~cell_id, ~from, ~to, ~percentage,
