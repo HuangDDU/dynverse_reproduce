@@ -13,9 +13,8 @@ wr_orig <- wrap_data(
   cell_ids = cell_ids
 )
 
-
 test_that("Testing add_cell_graph", {
-  cell_graph <- tibble::tribble(
+  cell_graph <- tribble(
     ~from, ~to, ~length, ~directed,
     "W", "WbX", 0.8, F,
     "WbX", "X", 0.2, F,
@@ -32,6 +31,7 @@ test_that("Testing add_cell_graph", {
     "XeY", "e", 0.2, F,
     "ZfA", "f", 0.5, F,
   )
+  cell_graph$directed <- TRUE
 
   to_keep <- c(W = T, X = T, Y = T, Z = T, A = T, WbX = T, XcZ = T, XeY = T, ZfA = T, a = F, b = F, c = F, d = F, e = F, f = F)
 
@@ -41,7 +41,7 @@ test_that("Testing add_cell_graph", {
     milestone_prefix = "ML_"
   )
 
-  expected_milestone_ids <- paste0("ML_", c("W", "X", "Y", "A"))
+   =expected_milestone_ids <- paste0("ML_", c("W", "X", "Y", "A"))
   expected_milestone_network <- tribble(
     ~from, ~to, ~length, ~directed,
     "ML_W", "ML_X", 1, F,

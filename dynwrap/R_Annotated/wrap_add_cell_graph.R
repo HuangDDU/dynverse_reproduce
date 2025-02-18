@@ -90,8 +90,8 @@ add_cell_graph <- function(
   # STEP 1: for each cell, find closest milestone
   # 步骤1： 对于每个细胞，找到最近的里程碑
   v_keeps <- names(to_keep)[to_keep]
-  dists <- igraph::distances(gr, to = v_keeps)
-  closest_trajpoint <- v_keeps[apply(dists, 1, which.min)]
+  dists <- igraph::distances(gr, to = v_keeps) # 所有节点到v_keep节点的最短距离, mode参数默认为all相当于考虑成无向图，因此有向图得到的是对称矩阵
+  closest_trajpoint <- v_keeps[apply(dists, 1, which.min)] # 到距离最近的v_keep节点名称
 
   # STEP 2: simplify backbone
   # 步骤2：简化骨架，诱导子图: 子图中两两顶点在原图中的边一定在子图中存在
@@ -108,7 +108,7 @@ add_cell_graph <- function(
       as_tibble() %>%
       rowwise() %>%
       mutate(
-        path = igraph::shortest_paths(gr, from, to, mode = "out")$vpath %>% map(names)
+        path = igraph::shortest_paths(gr, from, to, mode = "out")$vpath %>% map(names) # path列添加最短路径，这里主干上基本都是from,to
       ) %>%
       ungroup()
 
@@ -118,16 +118,16 @@ add_cell_graph <- function(
   progressions <-
     milestone_network_proto %>%
       rowwise() %>%
-      do(with(., tibble(from, to, weight, node = path))) %>%
+      do(with(., tibble(from, to, weight, node = path))) %>% # 展开
       ungroup %>%
       group_by(node) %>%
-      slice(1) %>%
+      slice(1) %>% # 保留关键节点所在的第一条边
       mutate(
         percentage = ifelse(weight == 0, 0, igraph::distances(gr, from, node) / weight)
-      ) %>%
-      ungroup() %>%
+      ) %>% # 计算关键节点的percentage
+      ungroup() %>% # 以上都是左表
       right_join(
-        tibble(cell_id = ids, node = closest_trajpoint),
+        tibble(cell_id = ids, node = closest_trajpoint), # 右表
         by = "node"
       ) %>%
       select(cell_id, from, to, percentage)
@@ -139,6 +139,7 @@ add_cell_graph <- function(
 
   # rename milestones so the milestones don't have the
   # same names as the nodes
+  # 修改里程碑名字
   renamefun <- function(x) {
     paste0(milestone_prefix, x) %>%
       set_names(names(x))
