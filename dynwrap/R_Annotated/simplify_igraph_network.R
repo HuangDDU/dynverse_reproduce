@@ -112,10 +112,12 @@ simplify_igraph_network <- function(
     to_process <- !keep_v
 
     for (v_rem in seq_len(num_vs)) {
+      # 从特定位置开始，向前（入度）向后（出度）搜索删除链
       if (to_process[[v_rem]]) {
         to_process[[v_rem]] <- FALSE
 
         # search for in end
+        # 向前、入度前驱节点、边处理
         i <- simplify_get_i(neighs, v_rem, is_directed)
         i_prev <- v_rem
 
@@ -132,6 +134,7 @@ simplify_igraph_network <- function(
         }
 
         # search for out end
+        # 向后、出度后继节点、边处理
         j <- simplify_get_j(neighs, v_rem, is_directed)
         j_prev <- v_rem
 
@@ -152,7 +155,9 @@ simplify_igraph_network <- function(
         right_path <- bind_rows(right_path) %>%
           mutate_at(c("from", "to"), ~ igraph::V(subgr)$name[.])
 
+        # 此时i,j为删除链的前驱后继序号
         if (i == j && !allow_self_loops) {
+          # 自环操作
           path <- bind_rows(left_path, right_path)
 
           if (nrow(path) == 3 || (nrow(path) == 2 && allow_duplicated_edges)) {
@@ -234,6 +239,7 @@ simplify_igraph_network <- function(
 }
 
 simplify_determine_nodes_to_keep <- function(subgr, is_directed, force_keep) {
+  # 决定在简化过程中保留哪些节点
   name_check <- igraph::V(subgr)$name %in% force_keep
 
   loop_check <- igraph::V(subgr) %>%
@@ -250,6 +256,7 @@ simplify_determine_nodes_to_keep <- function(subgr, is_directed, force_keep) {
 }
 
 simplify_get_neighbours <- function(subgr, is_directed) {
+  # 获得图上所有节点的邻居节点序号
   num_vs <- igraph::V(subgr) %>% length
 
   if (is_directed) {
@@ -268,6 +275,7 @@ simplify_get_neighbours <- function(subgr, is_directed) {
 }
 
 simplify_get_i <- function(neighs, v_rem, is_directed) {
+  # 获取入度节点
   if (is_directed) {
     neighs$neighs_in[[v_rem]]
   } else {
@@ -275,6 +283,7 @@ simplify_get_i <- function(neighs, v_rem, is_directed) {
   }
 }
 simplify_get_j <- function(neighs, v_rem, is_directed) {
+  # 获取出度节点
   if (is_directed) {
     neighs$neighs_out[[v_rem]]
   } else {
@@ -282,6 +291,7 @@ simplify_get_j <- function(neighs, v_rem, is_directed) {
   }
 }
 simplify_get_next <- function(neighs, v_rem, is_directed, left = NA, prev = NA) {
+  # 连续删除节点，prev是上一次删除的节点，v_rem是当前删除的节点
   if (is_directed) {
     if (left) {
       neighs$neighs_in[[v_rem]]
@@ -294,27 +304,29 @@ simplify_get_next <- function(neighs, v_rem, is_directed, left = NA, prev = NA) 
 }
 
 simplify_get_edge_points_on_path <- function(sub_edge_points, path) {
-  rev_path <- path %>% select(from = to, to = from)
+  # 获得在子图milestone_percentage待删除的路径的细胞
+  rev_path <- path %>% select(from = to, to = from) # 边反转
 
   sepaj <- sub_edge_points %>%
-    anti_join(path, by = c("from", "to"))
+    anti_join(path, by = c("from", "to")) # 仅仅在sub_edge_points但不在path的细胞保留
   toflip <- sepaj %>%
-    inner_join(rev_path, by = c("from", "to"))
+    inner_join(rev_path, by = c("from", "to")) # sepaj中还有细胞也应该被剔除掉，这些细胞在rev_path中的边可以在sepaj中找到
 
   on_path <- bind_rows(
     sub_edge_points,
-    toflip %>% rename(from = to, to = from) %>% mutate(percentage = 1 - percentage)
+    toflip %>% rename(from = to, to = from) %>% mutate(percentage = 1 - percentage) # 反转细胞percentage计算并额外拼接上去
   ) %>%
-    inner_join(path, by = c("from", "to"))
+    inner_join(path, by = c("from", "to")) # 在待删除边上的细胞
 
   not_on_path <-
     sepaj %>%
-    anti_join(rev_path, by = c("from", "to"))
+    anti_join(rev_path, by = c("from", "to")) # 不在带删除边上的细胞
 
   lst(on_path, not_on_path)
 }
 
 simplify_replace_edges <- function(subgr, sub_edge_points, i, j, path, is_directed) {
+  # 添加替换旧边的新边
   swap <- !is_directed && i > j
 
   if (swap) {
