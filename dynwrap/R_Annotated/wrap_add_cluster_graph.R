@@ -58,6 +58,7 @@ add_cluster_graph <- function(
   check_milestone_network(milestone_ids, milestone_network)
 
   # add explicit splits if requested
+  #
   if (explicit_splits) {
     milestone_network <- cluster_graph_add_explicit_splits(milestone_network)
     milestone_ids <- unique(c(milestone_network$to, milestone_network$from))
@@ -66,6 +67,7 @@ add_cluster_graph <- function(
   # put cells on edges.
   # prefer to put a cell at the end of a transition, but put it at the start
   # if there is no other option.
+  # 默认放细胞到所属的边的终点上
   both_directions <- bind_rows(
     milestone_network %>% select(from, to) %>% mutate(label = from, percentage = 0),
     milestone_network %>% select(from, to) %>% mutate(label = to, percentage = 1)
@@ -76,7 +78,7 @@ add_cluster_graph <- function(
   ) %>%
     left_join(both_directions, by = "label") %>%
     group_by(cell_id) %>%
-    arrange(desc(percentage)) %>%
+    arrange(desc(percentage)) %>% # 降序排列选择第一个milestone即percentage=1, 即当细胞属于里程碑属于多个边时, 放到入度边上(唯一)
     slice(1) %>%
     ungroup() %>%
     select(-label)
