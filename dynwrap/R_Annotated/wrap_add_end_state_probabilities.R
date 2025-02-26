@@ -62,8 +62,10 @@ add_end_state_probabilities <- function(
   # process end_state_probabilities
   assert_that("cell_id" %in% colnames(end_state_probabilities))
 
+
   if (ncol(end_state_probabilities) == 1) {
     # process as linear of no end_state_probabilities are provided
+    # 只有一个终端状态，就是线性轨迹了
     dataset %>%
       add_linear_trajectory(
         pseudotime = pseudotime,
@@ -72,10 +74,12 @@ add_end_state_probabilities <- function(
       )
   } else {
     # construct milestone ids and milestone network
-    start_milestone_id <- "milestone_begin"
-    end_milestone_ids <- colnames(end_state_probabilities)[colnames(end_state_probabilities) != "cell_id"]
+    # 多个终端状态， 构建里程碑网络
+    start_milestone_id <- "milestone_begin" # 起始点是一个完全虚拟点
+    end_milestone_ids <- colnames(end_state_probabilities)[colnames(end_state_probabilities) != "cell_id"] # 终端点从列名中提取
     milestone_ids <- c(start_milestone_id, end_milestone_ids)
 
+    # 起始点作为中心的星型里程碑网络
     milestone_network <- tibble(
       from = start_milestone_id,
       to = end_milestone_ids,
@@ -84,6 +88,7 @@ add_end_state_probabilities <- function(
     )
 
     # one divergence region
+    # 添加发散区域，由所有里程碑节点共同构成构成
     divergence_regions <- tibble(
       milestone_id = milestone_ids,
       divergence_id = "D",
@@ -91,11 +96,12 @@ add_end_state_probabilities <- function(
     )
 
     # construct progressions
+    # 概率矩阵宽数据转化为长数据
     progressions <- end_state_probabilities %>%
-      gather("to", "percentage", -cell_id) %>%
+      gather("to", "percentage", -cell_id) %>% # 忽略cell_id列，宽数据转化为长数据
       mutate(from = start_milestone_id) %>%
       group_by(cell_id) %>%
-      mutate(percentage = percentage / sum(percentage) * pseudotime[cell_id]) %>%  # scale percentage so that sum = 1
+      mutate(percentage = percentage / sum(percentage) * pseudotime[cell_id]) %>%  # 缩放使其之和为1 # scale percentage so that sum = 1
       ungroup()
 
     # return output
