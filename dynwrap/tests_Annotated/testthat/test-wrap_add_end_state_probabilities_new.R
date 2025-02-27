@@ -63,7 +63,7 @@ test_that("Testing add_end_state_probabilities 3 state", {
   expect_equal(wr$progressions, expected_progressions %>% select(colnames(wr$progressions)))
 })
 
-# progression转化为mielstone_percentage中milestone_begin重复的问题
+# # TODO: progression转化为mielstone_percentage中milestone_begin重复的问题
 # # 一个细胞在多个终端状态上都有概率
 # test_that("Testing add_end_state_probabilities 3 state", {
 #   end_state_probabilities <- tribble(

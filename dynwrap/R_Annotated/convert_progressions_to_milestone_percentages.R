@@ -24,7 +24,7 @@ convert_progressions_to_milestone_percentages <- function(
   progressions
 ) {
 
-  check_froms <- tapply(progressions$from, progressions$cell_id, function(x) length(unique(x)) == 1)
+  check_froms <- tapply(progressions$from, progressions$cell_id, function(x) length(unique(x)) == 1) # 判断一个细胞是否有多个from里程碑
   if (any(!check_froms)) {
     stop("In ", sQuote("progressions"), ", cells should only have 1 unique from milestone.")
   }
@@ -38,17 +38,20 @@ convert_progressions_to_milestone_percentages <- function(
   }
 
   # determine milestone percentages for self edges
+  # 自环的milestone
   selfs <- progressions %>%
     filter(from == to) %>%
     select(cell_id, milestone_id = from) %>%
     mutate(percentage = 1)
 
+  # 非自环的milstone, 后续分别对from和to
   progressions <- progressions %>%
     filter(from != to)
 
   # determine milestone percentages for 'from' milestones
+  # 属于from milestone的概率
   from_mls <- tapply(progressions$from, progressions$cell_id, first, default = NA_character_)
-  from_pct <- 1 - tapply(progressions$percentage, progressions$cell_id, sum, default = NA_real_)
+  from_pct <- 1 - tapply(progressions$percentage, progressions$cell_id, sum, default = NA_real_) # 这里对星形网络/发散区域十分重要
   froms <- tibble(
     cell_id = names(from_mls) %||% character(),
     milestone_id = from_mls[cell_id] %>% unname() %>% as.character(),
@@ -56,6 +59,7 @@ convert_progressions_to_milestone_percentages <- function(
   )
 
   # determine milestone percentages for 'to' milestones
+  # 属于to milestone的概率,直接取而对应的列即可
   tos <- progressions %>%
     select(cell_id, milestone_id = to, percentage)
 
