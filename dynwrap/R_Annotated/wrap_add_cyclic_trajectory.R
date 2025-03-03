@@ -40,6 +40,7 @@ add_cyclic_trajectory <- function(
   pseudotime <- process_pseudotime(dataset, pseudotime)
 
   # scale pseudotime
+  # 归一化
   if (do_scale_minmax) {
     pseudotime <- scale_minmax(pseudotime)
   } else {
@@ -50,6 +51,7 @@ add_cyclic_trajectory <- function(
   milestone_ids <- c("A", "B", "C")
 
   # construct milestone_network
+  # 构建里程碑网络：A->B, B->C, C->A
   milestone_network <- tibble(
     from = milestone_ids,
     to = milestone_ids[c(2,3,1)],
@@ -59,13 +61,14 @@ add_cyclic_trajectory <- function(
   )
 
   # construct progressions
+  # 构建细胞过程，3个分段内
   progressions <- tibble(
     time = 3 * pseudotime,
     cell_id = names(pseudotime)
   ) %>%
-    mutate(edge_id = ifelse(time <= 1, 1L, ifelse(time <= 2, 2L, 3L))) %>%
-    left_join(milestone_network, by = "edge_id") %>%
-    mutate(percentage = time - (edge_id - 1)) %>%
+    mutate(edge_id = ifelse(time <= 1, 1L, ifelse(time <= 2, 2L, 3L))) %>% # 伪时间划分到3个分段内
+    left_join(milestone_network, by = "edge_id") %>% # 拼接到特定里程碑边区间内
+    mutate(percentage = time - (edge_id - 1)) %>% # 在里程碑边区间内部归一化
     select(cell_id, from, to, percentage)
 
   milestone_network <- milestone_network %>%
